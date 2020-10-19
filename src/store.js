@@ -1,38 +1,23 @@
-import { createStore } from "redux";
+import { configureStore, createSlice } from "@reduxjs/toolkit";
+const initialState = JSON.parse(localStorage.getItem("ToDos"));
 
-const ADD = "ADD";
-const DELETE = "DELETE";
+const toDos = createSlice({
+  name: "toDosReducer",
+  initialState,
+  reducers: {
+    add: (state, action) => {
+      state.push({ text: action.payload, id: Date.now() });
+    },
+    remove: (state, action) => state.filter(toDo => toDo.id !== action.payload),
+  },
+});
 
-const addToDo = text => {
-  return {
-    type: ADD,
-    text,
-  };
-};
+const store = configureStore({ reducer: toDos.reducer });
 
-const deleteToDo = id => {
-  return {
-    type: DELETE,
-    id,
-  };
-};
+store.subscribe(() => {
+  localStorage.setItem("ToDos", JSON.stringify(store.getState()));
+});
 
-const reducer = (state = [], action) => {
-  switch (action.type) {
-    case ADD:
-      return [{ text: action.text, id: Date.now() }, ...state];
-    case DELETE:
-      return state.filter(toDo => toDo !== action.id);
-    default:
-      return state;
-  }
-};
-
-const store = createStore(reducer);
-
-export const actionCreator = {
-  addToDo,
-  deleteToDo,
-};
+export const { add, remove } = toDos.actions;
 
 export default store;
